@@ -71,10 +71,30 @@ if [ ! -f "/workspace/bin/chatbot-server" ]; then
 fi
 
 # Check again after LFS pull
-if [ ! -f "/workspace/bin/chatbot-server" ]; then
-    echo "❌ Error: Chatbot binary still not found"
-    echo "   Listing workspace structure:"
-    find /workspace -type f -name "chatbot*" || echo "No chatbot files found"
+if [ ! -f "/workspace/bin/chatbot-server" ] || [ ! -s "/workspace/bin/chatbot-server" ]; then
+    echo "⚠️  Binary still not available, downloading from GitHub release..."
+
+    mkdir -p /workspace/bin
+
+    # Download from GitHub release
+    RELEASE_URL="https://github.com/mfiume/vertex-ai-chatbot-workbench/releases/download/v1.0.0/chatbot-server"
+
+    if command -v curl &> /dev/null; then
+        curl -L -o /workspace/bin/chatbot-server "$RELEASE_URL"
+        echo "✅ Downloaded binary from GitHub release"
+    elif command -v wget &> /dev/null; then
+        wget -O /workspace/bin/chatbot-server "$RELEASE_URL"
+        echo "✅ Downloaded binary from GitHub release"
+    else
+        echo "❌ Error: Neither curl nor wget available to download binary"
+        exit 1
+    fi
+fi
+
+# Final check
+if [ ! -f "/workspace/bin/chatbot-server" ] || [ ! -s "/workspace/bin/chatbot-server" ]; then
+    echo "❌ Error: Chatbot binary still not available after all attempts"
+    echo "   Please check the logs and contact support"
     exit 1
 fi
 
