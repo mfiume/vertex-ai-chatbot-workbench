@@ -3,7 +3,8 @@
 # Verily Workbench post-startup script for Vertex AI Chatbot
 # This script runs after the container starts
 
-set -e
+# Don't exit on error - we want to see what's happening
+set +e
 
 echo ""
 echo "🤖 Vertex AI Chatbot - Startup"
@@ -42,10 +43,38 @@ echo ""
 # Navigate to workspace
 cd /workspace
 
+# Debug: Show what files we have
+echo "📁 Workspace contents:"
+ls -lah /workspace/bin/ || echo "No bin/ directory found"
+echo ""
+
 # Check if binary exists
 if [ ! -f "/workspace/bin/chatbot-server" ]; then
-    echo "❌ Error: Chatbot binary not found at /workspace/bin/chatbot-server"
-    echo "   Please build the binary first using: ./scripts/build.sh"
+    echo "⚠️  Chatbot binary not found at /workspace/bin/chatbot-server"
+    echo "   This might be a Git LFS issue. Checking..."
+
+    # Check if it's a Git LFS pointer file
+    if [ -f "/workspace/bin/chatbot-server" ]; then
+        head -5 /workspace/bin/chatbot-server
+    fi
+
+    echo ""
+    echo "Attempting to pull LFS files..."
+    if command -v git &> /dev/null; then
+        cd /workspace
+        git lfs install
+        git lfs pull
+        echo "✅ Git LFS pull completed"
+    else
+        echo "❌ Git command not available"
+    fi
+fi
+
+# Check again after LFS pull
+if [ ! -f "/workspace/bin/chatbot-server" ]; then
+    echo "❌ Error: Chatbot binary still not found"
+    echo "   Listing workspace structure:"
+    find /workspace -type f -name "chatbot*" || echo "No chatbot files found"
     exit 1
 fi
 

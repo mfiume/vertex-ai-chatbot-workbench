@@ -22,26 +22,13 @@
     "PORT": "3000"
   },
 
-  "postCreateCommand": "echo 'Container created. Binary ready at /workspace/bin/chatbot-server'",
+  "postCreateCommand": "apt-get update && apt-get install -y git-lfs curl && git lfs install",
 
   "postStartCommand": "/bin/bash /workspace/.devcontainer/post-startup.sh",
-
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "googlecloudtools.cloudcode"
-      ],
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash"
-      }
-    }
-  },
 
   "features": {
     "ghcr.io/devcontainers/features/gcloud:1": {
       "version": "latest"
     }
-  },
-
-  "remoteUser": "node"
+  }
 }
